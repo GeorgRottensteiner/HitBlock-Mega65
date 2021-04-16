@@ -129,7 +129,7 @@ StartGame
 RestartLevel          
 NextLevel          
           lda LEVEL_NR
-          cmp #1
+          cmp #7
           bne +
           
           jmp HandleWellDone
