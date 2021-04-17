@@ -121,7 +121,6 @@ StartGame
           sta SCREEN_CHAR + 2 * ( 24 * 40 + 17 )
           
           lda #0
-          lda #9
           sta LEVEL_NR
           
           lda #3
