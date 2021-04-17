@@ -121,6 +121,7 @@ StartGame
           sta SCREEN_CHAR + 2 * ( 24 * 40 + 17 )
           
           lda #0
+          lda #9
           sta LEVEL_NR
           
           lda #3
@@ -129,7 +130,7 @@ StartGame
 RestartLevel          
 NextLevel          
           lda LEVEL_NR
-          cmp #7
+          cmp #10
           bne +
           
           jmp HandleWellDone

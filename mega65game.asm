@@ -127,118 +127,12 @@ PARAM11             = $3a
           ;inz  
           ;sta [ZP.Color], z     
           
-          ;sprite!
-START_X = 30  
-SPRITE_X_DELTA = 26        
-          lda #START_X
-          sta VIC.SPRITE_X_POS
-          lda #START_X + 1 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 2
-          lda #START_X + 2 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 4
-          lda #START_X + 3 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 6
-          lda #START_X + 4 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 8
-          lda #START_X + 5 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 10
-          lda #START_X + 6 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 12
-          lda #START_X + 7 * SPRITE_X_DELTA
-          sta VIC.SPRITE_X_POS + 14
-          
-          lda #100
-          sta VIC.SPRITE_Y_POS
-          sta VIC.SPRITE_Y_POS + 2
-          sta VIC.SPRITE_Y_POS + 4
-          sta VIC.SPRITE_Y_POS + 6
-          sta VIC.SPRITE_Y_POS + 8
-          sta VIC.SPRITE_Y_POS + 10
-          sta VIC.SPRITE_Y_POS + 12
-          sta VIC.SPRITE_Y_POS + 14
-          
-          lda #$ff
-          sta VIC.SPRITE_ENABLE
-          
-          lda #0
-!ifdef USE_16COLOR_SPRITES {          
-          sta VIC4.SPR16EN
-          sta VIC4.SPRX64EN
-}
-        
-          ;sprite 0 color
-          lda #10
-          sta VIC.SPRITE_COLOR
-          sta VIC.SPRITE_COLOR + 1
-          sta VIC.SPRITE_COLOR + 2
-          sta VIC.SPRITE_COLOR + 3
-          sta VIC.SPRITE_COLOR + 4
-          sta VIC.SPRITE_COLOR + 5
-          sta VIC.SPRITE_COLOR + 6
-          sta VIC.SPRITE_COLOR + 7
-          
-!ifdef USE_16COLOR_SPRITES {                    
-          ;place sprite pointer 
-          ;lda #<SPRITE_POINTERS
-          ;sta VIC4.SPRPTRADR_LO
-          ;lda #>SPRITE_POINTERS
-          ;sta VIC4.SPRPTRADR_HI
-
           lda #<4088
           sta VIC4.SPRPTRADR_LO
           lda #>4088
           sta VIC4.SPRPTRADR_HI
           
-          ;absolute sprite addresses plus sprite bank 0
-          ;lda #$80
-          ;sta VIC4.SPRPTR16
-          
-          ;;16 bit address pointers
-          ;lda #<SPRITE_DATA
-          ;sta SPRITE_POINTERS
-          ;sta SPRITE_POINTERS + 2
-          ;sta SPRITE_POINTERS + 4
-          ;sta SPRITE_POINTERS + 6
-          ;sta SPRITE_POINTERS + 8
-          ;sta SPRITE_POINTERS + 10
-          ;sta SPRITE_POINTERS + 12
-          ;sta SPRITE_POINTERS + 14
-          ;
-          ;lda #>SPRITE_DATA
-          ;sta SPRITE_POINTERS + 1
-          ;sta SPRITE_POINTERS + 3
-          ;sta SPRITE_POINTERS + 5
-          ;sta SPRITE_POINTERS + 7
-          ;sta SPRITE_POINTERS + 9
-          ;sta SPRITE_POINTERS + 11
-          ;sta SPRITE_POINTERS + 13
-          ;sta SPRITE_POINTERS + 15
-          ;old sprite pointer method
-          lda #SPRITE_DATA / 64
-          sta SPRITE_POINTER_BASE
-          sta SPRITE_POINTER_BASE + 1
-          sta SPRITE_POINTER_BASE + 2
-          sta SPRITE_POINTER_BASE + 3
-          sta SPRITE_POINTER_BASE + 4
-          sta SPRITE_POINTER_BASE + 5
-          sta SPRITE_POINTER_BASE + 6
-          sta SPRITE_POINTER_BASE + 7
-} else {
-          ;old sprite pointer method
-          lda #SPRITE_DATA / 64
-          sta SPRITE_POINTER_BASE
-          sta SPRITE_POINTER_BASE + 1
-          sta SPRITE_POINTER_BASE + 2
-          sta SPRITE_POINTER_BASE + 3
-          sta SPRITE_POINTER_BASE + 4
-          sta SPRITE_POINTER_BASE + 5
-          sta SPRITE_POINTER_BASE + 6
-          sta SPRITE_POINTER_BASE + 7
-}          
-          
           jmp HandleTitle
-          
-          jmp StartGame
 
           
 
