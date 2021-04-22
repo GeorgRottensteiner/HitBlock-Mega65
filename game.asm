@@ -69,6 +69,10 @@ StartGame
           ;ldx #$10    ;Pages to clear
           ;jsr ColorClear32bitAddr
           
+          ;set sprite pal to bank 1
+          lda #%01000101
+          sta VIC4.PALSEL
+          
           lda #$00
           ldx #$10;Pages to clear
           jsr ScreenClear32bitAddr

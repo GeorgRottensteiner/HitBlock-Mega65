@@ -1,4 +1,4 @@
-TITLE_SPRITE_X_POS = 70
+TITLE_SPRITE_X_POS = 80
   
 !zone HandleTitle
 HandleTitle
@@ -6,9 +6,13 @@ HandleTitle
           ldx #$10
           jsr ColorClear32bitAddr
           
-          lda #0
+          lda #$ff
           sta VIC4.SPR16EN
           sta VIC4.SPRX64EN
+          
+          ;set sprite palette bank 2
+          lda #%10001001
+          sta VIC4.PALSEL
           
           lda #TITLE_SPRITE_X_POS
           sta VIC.SPRITE_X_POS
@@ -41,19 +45,19 @@ HandleTitle
           
           lda #TITLE_LETTER_SPRITES / 64
           sta SPRITE_POINTER_BASE
-          inc 
+          lda #( 1 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 1
-          inc 
+          lda #( 2 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 2
-          inc 
+          lda #( 3 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 3
-          inc 
+          lda #( 4 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 4
-          inc 
+          lda #( 5 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 5
-          inc 
+          lda #( 6 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 6
-          inc 
+          lda #( 7 * 256 + TITLE_LETTER_SPRITES ) / 64
           sta SPRITE_POINTER_BASE + 7
           
           lda #15
@@ -61,7 +65,8 @@ HandleTitle
           lda #1
           sta VIC.SPRITE_MULTICOLOR_2
           
-          lda #13
+          ;transparent color index for 16color sprites
+          lda #0 ;13
           sta VIC.SPRITE_COLOR
           sta VIC.SPRITE_COLOR + 1
           sta VIC.SPRITE_COLOR + 2
@@ -72,7 +77,7 @@ HandleTitle
           sta VIC.SPRITE_COLOR + 7
 
           lda #$ff
-          sta VIC.SPRITE_MULTICOLOR
+          ;sta VIC.SPRITE_MULTICOLOR
           sta VIC.SPRITE_ENABLE
           
           lda #0
@@ -115,6 +120,36 @@ HandleTitle
           sta ZEROPAGE_POINTER_2 + 1
           jsr DisplayText
 
+          lda #<TEXT_INSTRUCTIONS_1
+          sta ZEROPAGE_POINTER_1
+          lda #>TEXT_INSTRUCTIONS_1
+          sta ZEROPAGE_POINTER_1 + 1
+          lda #<( SCREEN_CHAR + 13 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2
+          lda #>( SCREEN_CHAR + 13 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2 + 1
+          jsr DisplayText
+
+          lda #<TEXT_INSTRUCTIONS_2
+          sta ZEROPAGE_POINTER_1
+          lda #>TEXT_INSTRUCTIONS_2
+          sta ZEROPAGE_POINTER_1 + 1
+          lda #<( SCREEN_CHAR + 14 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2
+          lda #>( SCREEN_CHAR + 14 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2 + 1
+          jsr DisplayText
+
+          lda #<TEXT_INSTRUCTIONS_3
+          sta ZEROPAGE_POINTER_1
+          lda #>TEXT_INSTRUCTIONS_3
+          sta ZEROPAGE_POINTER_1 + 1
+          lda #<( SCREEN_CHAR + 15 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2
+          lda #>( SCREEN_CHAR + 15 * 80 + 3 )
+          sta ZEROPAGE_POINTER_2 + 1
+          jsr DisplayText
+
           lda #<TEXT_PRESS_FIRE
           sta ZEROPAGE_POINTER_1
           lda #>TEXT_PRESS_FIRE
@@ -140,17 +175,22 @@ HandleTitle
           lda #0
           sta VIC4.CHARSTEP_HI
           
+          ;jsr PaletteFadeIn
+          
           
 TitleLoop
           lda #60
           jsr WaitForLine
-          lda #7
-          sta VIC.BACKGROUND_COLOR
-
-          lda #61
+          ldx #13
+          stx VIC.BACKGROUND_COLOR
+          inc
           jsr WaitForLine
-          lda #0
-          sta VIC.BACKGROUND_COLOR
+          ldx #0
+          stx VIC.BACKGROUND_COLOR
+          inc
+          jsr WaitForLine
+          ldx #8
+          stx VIC.BACKGROUND_COLOR
           
           jsr WaitFrame
 
@@ -211,6 +251,48 @@ ReleaseButton
           beq -
           
           rts
+          
+          
+          
+!zone PaletteFadeIn
+.PALETTE_POS
+          !byte 0
+.PALETTE_R
+          !byte 127
+.PALETTE_G
+          !byte 255
+.PALETTE_B
+          !byte 255
+          
+PaletteFadeIn
+          lda #0
+          sta .PALETTE_POS
+          
+--
+          ;copy palette data (16 entries)
+          ldy #0
+          ldx #$00
+-
+          lda PALETTE_DATA_R, x
+          sta VIC4.PALRED,y
+          lda PALETTE_DATA_G, x
+          sta VIC4.PALGREEN,y
+          lda PALETTE_DATA_B, x
+          sta VIC4.PALBLUE,y
+          
+          iny
+          inx
+          cpx #16
+          bne -
+          
+          
+          jsr WaitFrame
+          inc .PALETTE_POS
+          lda .PALETTE_POS
+          cmp #16
+          bne --
+          
+          rts
   
           
           
@@ -219,6 +301,13 @@ TEXT_WRITTEN_BY
           
 TEXT_FOR_COMPO
           !scr "for shallans mega65 compo",0          
+          
+TEXT_INSTRUCTIONS_1
+          !scr "destroy all colored blocks. you can only destroy them if your ball has the",0          
+TEXT_INSTRUCTIONS_2
+          !scr "same color. there are color changers, direction changers, keys and locks.",0
+TEXT_INSTRUCTIONS_3
+          !scr "press fire to speed up. f1 to self destruct.",0          
           
 TEXT_PRESS_FIRE
           !scr "press fire to start playing",0                    
