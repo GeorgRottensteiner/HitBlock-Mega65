@@ -32,12 +32,15 @@ BuildScreen
           sta LEVEL_DATA,y
  
           ;count blocks to destroy
+          cmp #TILE_GREY
+          beq .AddTile
           cmp #TILE_BLUE
           bcc +
           
           cmp #TILE_BROWN + 1
           bcs +
           
+.AddTile          
           inc NUM_BLOCKS
           
 +          

@@ -47,6 +47,8 @@ TILE_LOCK_YELLOW      = 38
 TILE_LOCK_VIOLET      = 39
 TILE_LOCK_BROWN       = 40
 
+TILE_GREY             = 41
+
 COLOR_BLUE            = 0
 COLOR_RED             = 1
 COLOR_GREEN           = 2
@@ -133,7 +135,7 @@ StartGame
 RestartLevel          
 NextLevel          
           lda LEVEL_NR
-          cmp #10
+          cmp #11
           bne +
           
           jmp HandleWellDone
@@ -516,8 +518,21 @@ HitTile
           
           rts
           
+;temporary store color of destroyed tile for smoke          
+.TILE_COLOR
+          !byte 0
+          
 +          
           ;hit color block?
+          cmp #TILE_GREY
+          bne +
+          
+          ;grey is always match
+          lda #6
+          sta .TILE_COLOR
+          jmp .ColorMatch
+          
++          
           cmp #TILE_BLUE
           bcs +
           jmp .NoColorBlock
@@ -532,6 +547,12 @@ HitTile
           cmp PLAYER_COLOR
           lbne .WrongColorBlock
           
+          lda PLAYER_COLOR
+          sta .TILE_COLOR
+
+.ColorMatch          
+
+
           ;fix shadow quad 2x2
           ldy PARAM7
           lda #TILE_EMPTY
@@ -549,7 +570,7 @@ HitTile
           sta PARAM3
           jsr SpawnObject
           
-          ldy PLAYER_COLOR
+          ldy .TILE_COLOR
           lda SMOKE_COLOR_TABLE,y
           sta VIC.SPRITE_COLOR,x
           
@@ -771,6 +792,7 @@ SMOKE_COLOR_TABLE
           !byte 13
           !byte 11
           !byte 9
+          !byte 1
           
           
         
