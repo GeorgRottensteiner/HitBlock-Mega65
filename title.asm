@@ -1,4 +1,6 @@
 TITLE_SPRITE_X_POS = 80
+
+TITLE_FADE_COLOR_INDEX = 15
   
 !zone HandleTitle
 HandleTitle
@@ -10,10 +12,37 @@ HandleTitle
           sta VIC4.SPR16EN
           sta VIC4.SPRX64EN
           
+          ;enable palette 00 from RAM
+          lda #$fc
+          trb VIC3.ROMBANK
+          
           ;set sprite palette bank 2
-          lda #%10001001
+          lda #%00001000
           sta VIC4.PALSEL
           
+          ;set default palette colors
+          ldx #0
+-          
+          lda PALETTE_DEFAULT_16_COLORS_R,x
+          sta VIC4.PALRED,x
+          lda PALETTE_DEFAULT_16_COLORS_G,x
+          sta VIC4.PALGREEN,x
+          lda PALETTE_DEFAULT_16_COLORS_B,x
+          sta VIC4.PALBLUE,x
+          inx
+          cpx #16
+          bne -
+          
+          lda #0
+          sta VIC4.PALRED + TITLE_FADE_COLOR_INDEX
+          sta VIC4.PALGREEN + TITLE_FADE_COLOR_INDEX
+          sta VIC4.PALBLUE + TITLE_FADE_COLOR_INDEX
+          sta PAL_POS
+          sta COLOR_INDEX
+          sta PAL_COLORS
+          sta PAL_COLORS + 1
+          sta PAL_COLORS + 2
+     
           lda #TITLE_SPRITE_X_POS
           sta VIC.SPRITE_X_POS
           lda #TITLE_SPRITE_X_POS + 1 * 28
@@ -175,9 +204,6 @@ HandleTitle
           lda #0
           sta VIC4.CHARSTEP_HI
           
-          ;jsr PaletteFadeIn
-          
-          
 TitleLoop
           lda #60
           jsr WaitForLine
@@ -194,11 +220,53 @@ TitleLoop
           
           jsr WaitFrame
 
+          ;color "effect"
+          ldy PAL_INDEX
+          lda COLOR_INDEX,y
+          tax
+          clc
+          adc #$d1
+          sta .ColorIndex
+          
+          lda PAL_COLORS,x
+          clc
+          adc COLOR_DIR,y
+          sta PAL_COLORS,x
+          
+          ;swizzle
+          asl
+          adc #$80
+          rol
+          asl
+          adc #$80
+          rol
+.ColorIndex = * + 2
+          sta VIC4.PALRED + TITLE_FADE_COLOR_INDEX
+          sta PARAM1
+          
+          inc PAL_POS
+          lda PAL_POS
+          cmp #63
+          bne +
+          
+          lda #0
+          sta PAL_POS
+          
+          inc PAL_INDEX
+          lda PAL_INDEX
+          cmp #6
+          bne +
+          lda #0
+          sta PAL_INDEX
+          
+          
++          
+
           lda CIA1.DATA_PORT_B
           sta JOY_VALUE
           
           and #$10
-          bne TitleLoop
+          lbne TitleLoop
 
           ;release button
           jsr ReleaseButton
@@ -222,7 +290,18 @@ TitleLoop
           
           jmp StartGame
 
+HEX_CHAR2
+          !byte 48,49,50,51,52,53,54,55,56,57,1,2,3,4,5,6
           
+;hi byte offset to indicate R, G or B (being 0,1 or 2)          
+COLOR_INDEX
+          !byte 0,1,2,0,1,2
+          
+COLOR_DIR
+          !byte 4,4,4,$fc,$fc,$fc
+          
+PAL_COLORS
+          !byte 0,0,0
           
 !zone DisplayText
 DisplayText
@@ -295,6 +374,11 @@ PaletteFadeIn
           rts
   
           
+PAL_POS
+          !byte 0
+          
+PAL_INDEX
+          !byte 0
           
 TEXT_WRITTEN_BY
           !scr "written by endurion  2021",0
@@ -311,3 +395,13 @@ TEXT_INSTRUCTIONS_3
           
 TEXT_PRESS_FIRE
           !scr "press fire to start playing",0                    
+          
+PALETTE_DEFAULT_16_COLORS_R
+          !hex 00ff88aacc0000eedd66ff3377aa00bb
+          
+PALETTE_DEFAULT_16_COLORS_G
+          !hex 00ff00ff44cc00ee8844773377ff88bb
+          
+PALETTE_DEFAULT_16_COLORS_B
+          !hex 00ff00eecc55aa77550077337766ffbb
+          

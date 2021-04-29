@@ -72,8 +72,12 @@ StartGame
           ;jsr ColorClear32bitAddr
           
           ;set sprite pal to bank 1
-          lda #%01000101
+          lda #%01010101
           sta VIC4.PALSEL
+          
+          ;enable palette 00 from ROM
+          lda #$04
+          ;tsb VIC3.ROMBANK
           
           lda #$00
           ldx #$10;Pages to clear
@@ -127,6 +131,7 @@ StartGame
           sta SCREEN_CHAR + 2 * ( 24 * 40 + 17 )
           
           lda #0
+          ;lda #15
           sta LEVEL_NR
           
           lda #3
@@ -135,7 +140,7 @@ StartGame
 RestartLevel          
 NextLevel          
           lda LEVEL_NR
-          cmp #11
+          cmp #SCREENS_NUM_MAPS
           bne +
           
           jmp HandleWellDone
@@ -752,6 +757,13 @@ HitTile
           ldx CURRENT_INDEX
           rts
           
+.HitWallSound
+          ldy #SFX_BALL_BOUNCE
+          lda #1
+          jsr PlaySoundEffect
+          ldx CURRENT_INDEX
+          lda #0
+          rts
           
           
 DIR_TOGGLE_TABLE_H_H

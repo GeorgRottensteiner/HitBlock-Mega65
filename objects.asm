@@ -395,6 +395,7 @@ ObjectMoveLeftBlocking
 
           lda SPRITE_CHAR_POS_X,x
           beq .BlockedLeft
+          ;lbeq HitTile.HitWallSound
 
           lda SPRITE_CHAR_POS_Y,x
           sec
@@ -515,7 +516,7 @@ ObjectMoveRightBlocking
           ldy #40
           lda SPRITE_CHAR_POS_X,x
           cmp #39
-          beq .BlockedRight
+          lbeq HitTile.HitWallSound
 
           lda SPRITE_CHAR_POS_Y,x
           sec
@@ -811,6 +812,8 @@ CheckCanMoveDown
           ldy SPRITE_CHAR_POS_Y,x
           iny
           sty PARAM2
+          cpy #24
+          lbcs HitTile.HitWallSound
 
           lda SCREEN_LINE_OFFSET_TABLE_LO,y
           sta ZEROPAGE_POINTER_1
@@ -825,6 +828,7 @@ CheckCanMoveDown
 -
           iny
           iny
+          
           lda (ZEROPAGE_POINTER_1),y
 
           jsr IsCharBlocking
@@ -851,9 +855,16 @@ CheckCanMoveDown
           sta HIT_DIR
           jsr HitTile
           
+
           lda #0
           rts
 
+.BlockedDownBorder          
+.HitWallSound
+          lda #0
+          sta PLAYER_AFFECTED
+          rts
+          
 
 
 ;------------------------------------------------------------

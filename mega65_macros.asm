@@ -4,6 +4,17 @@
 ;write $A5 and $96 there to enable VIC 3  
 ;write 'G' and 'S' there to enable VIC 4  
 .KEY            = $d02f
+
+;xxxx xxx1      CRAM2K        $1F800 -   $1FFFF,  $D800 - $DFFF, writeable
+;                           $FF80000 - $FF807FF
+;xxxx xx1x      EXTSYNC
+;xxxx x1xx      PAL         Use PALETTE ROM or RAM entries for colours 0 - 15
+;xxxx 1xxx      ROM8        $38000 - $39FFF,      $8000 - $9FFF, not writeable
+;xxx1 xxxx      ROMA        $3A000 - $3BFFF,      $A000 - $BFFF, not writeable
+;xx1x xxxx      ROMC        $2C000 - $2CFFF,      $C000 - $CFFF, not writeable
+;x1xx xxxx      CROM9       $29000 - $29FFF,      $D000 - $DFFF, not writeable
+;1xxx xxxx      ROME        $3E000 - $3FFFF,      $E000 - $FFFF, not writeable
+.ROMBANK        = $d030
   
 ;1xxx xxxx      H640      0 = use 40 character screen width
 ;x1xx xxxx      FAST

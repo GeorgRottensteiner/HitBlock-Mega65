@@ -1,11 +1,14 @@
 !zone BuildScreen
+.PREVIOUS_BLOCK
+          !byte $ff
+  
 BuildScreen
           jsr SetupScreenVector
           
           ldy LEVEL_NR
-          lda SCREENS_MAP_LIST_LO,y
+          lda MAPS_LO,y
           sta ZEROPAGE_POINTER_1
-          lda SCREENS_MAP_LIST_HI,y
+          lda MAPS_HI,y
           sta ZEROPAGE_POINTER_1 + 1
           
           lda SCREENS_MAP_EXTRA_DATA_LIST_LO,y
@@ -25,12 +28,29 @@ BuildScreen
           lda (ZEROPAGE_POINTER_2),y
           sta PLAYER_COLOR
           
+          lda #$ff
+          sta .PREVIOUS_BLOCK
+          
           ldy #0
           sty NUM_BLOCKS
+          ldx #0
 -          
+          lda #1
+          sta PARAM1
+          
           lda (ZEROPAGE_POINTER_1),y
-          sta LEVEL_DATA,y
- 
+          bpl .SetTile
+
+          ;RLE, MSB set, rest is count
+          and #$7f
+          sta PARAM1
+          
+          iny
+          lda (ZEROPAGE_POINTER_1),y
+          
+.SetTile          
+          sta LEVEL_DATA,x
+          
           ;count blocks to destroy
           cmp #TILE_GREY
           beq .AddTile
@@ -45,8 +65,17 @@ BuildScreen
           
 +          
           
+          dec PARAM1
+          beq .RLEDone
+          
+          inx
+          jmp .SetTile
+          
+.RLEDone
+
           iny
-          cpy #240
+          inx
+          cpx #240
           bne -
           
           ;fix shadows
@@ -256,10 +285,21 @@ TILE_SHADOW_TABLE
             
         
             
-!mediasrc "levels.mapproject",SCREENS_,maptile
+;!mediasrc "levels.mapproject",SCREENS_,maptile
+
+!src "stages.asm"
+
+!mediasrc "levels.mapproject",SCREENS_,tile
+!mediasrc "levels.mapproject",SCREENS_,mapextradata
 
 LEVEL_NR
           !byte 0
           
+;LEVEL_DATA_OUTSIDE
+          !fill 21, TILE_STEEL
 LEVEL_DATA
           !fill 240
+          
+;LEVEL_DATA_OUTSIDE
+          !fill 21, TILE_STEEL
+          
