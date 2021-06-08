@@ -7,23 +7,29 @@
 
 ;xxxx xxx1      CRAM2K        $1F800 -   $1FFFF,  $D800 - $DFFF, writeable
 ;                           $FF80000 - $FF807FF
+;                           map 2nd KB of colour RAM to $DC00-$DFFF
 ;xxxx xx1x      EXTSYNC
 ;xxxx x1xx      PAL         Use PALETTE ROM or RAM entries for colours 0 - 15
 ;xxxx 1xxx      ROM8        $38000 - $39FFF,      $8000 - $9FFF, not writeable
+;                           map C65 ROM to $8000
 ;xxx1 xxxx      ROMA        $3A000 - $3BFFF,      $A000 - $BFFF, not writeable
+;                           map C65 ROM to $A000
 ;xx1x xxxx      ROMC        $2C000 - $2CFFF,      $C000 - $CFFF, not writeable
-;x1xx xxxx      CROM9       $29000 - $29FFF,      $D000 - $DFFF, not writeable
+;                           map C65 ROM to $C000
+;x1xx xxxx      CROM9       $29000 - $29FFF,      $D000 - $DFFF, not writeable  
+;                           select between C64 and C65 charset
 ;1xxx xxxx      ROME        $3E000 - $3FFFF,      $E000 - $FFFF, not writeable
+;                           map C65 ROM to $E000
 .ROMBANK        = $d030
-  
-;1xxx xxxx      H640      0 = use 40 character screen width
-;x1xx xxxx      FAST
-;xx1x xxxx      ATTR
-;xxx1 xxxx      BPM
-;xxxx 1xxx      V400
-;xxxx x1xx      H1280
-;xxxx xx1x      MONO
-;xxxx xxx1      INT
+
+;1xxx xxxx      H640        0 = use 40 character screen width
+;x1xx xxxx      FAST            enable C65 FAST mode (∼3.5MHz)
+;xx1x xxxx      ATTR            enable extended attributes and 8 bit colour entries
+;xxx1 xxxx      BPM             bit plane mode
+;xxxx 1xxx      V400            enable 400 vertical pixels
+;xxxx x1xx      H1280           enable 1280 horizontal pixels (not implemented)
+;xxxx xx1x      MONO            enable VIC-III MONO video output (not implemented)
+;xxxx xxx1      INT             enable VIC-III interlaced mode
 .VICDIS         = $d031  
 
 
@@ -32,17 +38,16 @@
   
 
 ;VIC4 display settings
-;1xxx xxxx      = ALPHEN
-;x1xx xxxx      = VFAST
-;xx1x xxxx      = PALEMU
+;1xxx xxxx      = ALPHEN        alpha compositor enable
+;x1xx xxxx      = VFAST         C65GS FAST mode (48MHz)
+;xx1x xxxx      = PALEMU        video output pal simulation
 ;xxx1 xxxx      = SPR640    1 = sprite 640 resolution enabled
-;xxxx 1xxx      = SMTH
+;xxxx 1xxx      = SMTH          enable video output horizontal smoothing
 ;xxxx x1xx      = FCLRHI    1 = enable full color for chars > $ff
 ;xxxx xx1x      = FCLRLO    1 = enable full color for chars <= $ff
 ;xxxx xxx1      = CHR16     1 = enable 16 bit character numbers
 .VIC4DIS        = $d054
 
-  
 ;enable sprite wide mode (bit = sprite index)
 .SPRX64EN       = $d057
 
@@ -53,9 +58,9 @@
 .CHARSTEP_HI    = $d059
 
 ;disable hot registers
-;1xxx xxxx = HOTREG     1 = disable writing VIC2 registers affected VIC4 registers
-;x1xx xxxx = RSTDELEN   1 = enable raster delay by one line to match output pipeline
-;xx11 xxxx = SIDBDRWD     = width of single side border
+;1xxx xxxx = HOTREG         1 = disable writing VIC2 registers affecting VIC4 registers
+;x1xx xxxx = RSTDELEN       1 = enable raster delay by one line to match output pipeline
+;xx11 xxxx = SIDBDRWD         = width of single side border
 .HOTREG         = $d05d
 
 
@@ -85,13 +90,13 @@
 ;xxxx xx11 = ABTPALSEL    - VIC4 alternative bitmap/text palette bank
 .PALSEL         = $d070
 
-;palette red entries (up to $d1ff) 
+;palette red entries (up to $d1ff) - nibbles are switched in 8bit color mode
 .PALRED         = $d100
 
-;palette green entries (up to $d2ff) 
-.PALGREEN       = $d200
+;palette green entries (up to $d2ff) - nibbles are switched in 8bit color mode
+.PALGREEN       = $d200 
 
-;palette blue entries (up to $d3ff) 
+;palette blue entries (up to $d3ff) - nibbles are switched in 8bit color mode
 .PALBLUE        = $d300
 
 

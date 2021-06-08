@@ -16,7 +16,7 @@ SPRITE_EXPLOSION        = SPRITE_BASE + 3 + 5 * 4
 
 ;offset from calculated char pos to true sprite pos
 SPRITE_CENTER_OFFSET_X  = 8
-SPRITE_CENTER_OFFSET_Y  = 0;11
+SPRITE_CENTER_OFFSET_Y  = 1;11
 
 
 ;------------------------------------------------------------
@@ -1160,6 +1160,10 @@ CreateObjectInSlot
           lda BIT_TABLE,x
           tsb VIC4.SPR16EN
           tsb VIC4.SPRX64EN
+          
+          ;force 0 to be transparent
+          lda #0
+          sta VIC.SPRITE_COLOR,x
           
 +          
 

@@ -13,7 +13,7 @@ HandleTitle
           sta VIC4.SPRX64EN
           
           ;enable palette 00 from RAM
-          lda #$fc
+          lda #$f8
           trb VIC3.ROMBANK
           
           ;set sprite palette bank 2

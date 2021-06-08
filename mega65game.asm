@@ -40,6 +40,7 @@ PARAM11             = $3a
 
 * = $2001
 !basic
+;          jmp *
 
           jsr SetupSystem 
               
@@ -940,7 +941,7 @@ TITLE_LETTER_SPRITES
 !zone PlaySoundEffect
 PlaySoundEffectInChannel0
           lda #0
-
+ 
 ;y = SFX_...  
 ;a = channel 0,1,2
 PlaySoundEffect

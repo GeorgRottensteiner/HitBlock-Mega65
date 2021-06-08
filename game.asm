@@ -75,6 +75,9 @@ StartGame
           lda #%01010101
           sta VIC4.PALSEL
           
+          lda #0
+          sta VIC.BACKGROUND_COLOR
+          
           ;enable palette 00 from ROM
           lda #$04
           ;tsb VIC3.ROMBANK
