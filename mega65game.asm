@@ -1,4 +1,6 @@
-!cpu m65
+﻿!cpu m65
+
+!to "HitBlock65.prg",cbm
 
 !src "mega65_macros.asm"
 
@@ -22,7 +24,7 @@ PARAM1              = $30
 PARAM2              = $31
 PARAM3              = $32
 PARAM4              = $33
-PARAM5              = $34 
+PARAM5              = $34
 PARAM6              = $35
 PARAM7              = $36
 PARAM8              = $37
@@ -42,15 +44,15 @@ PARAM11             = $3a
 !basic
 ;          jmp *
 
-          jsr SetupSystem 
-              
+          jsr SetupSystem
+
           jsr SetupScreenVector
           jsr SetupColorVector
-          
+
           ;Move default screen location
           lda #<SCREEN_CHAR
           sta VIC4.SCRNPTR
-          lda #>SCREEN_CHAR 
+          lda #>SCREEN_CHAR
           sta VIC4.SCRNPTR + 1
           lda #SCREEN_CHAR >> 16
           sta VIC4.SCRNPTR + 2
@@ -58,14 +60,14 @@ PARAM11             = $3a
           sta VIC4.SCRNPTR + 3
 
           ;Relocate charset (Only for hires and MCM)
-          ;$d068-$d06a 
+          ;$d068-$d06a
           ; lda #<CHARROM
-          ; sta $d068 
+          ; sta $d068
           ; lda #>CHARROM
           ; sta $d069
           ; lda #[CHARROM >> 16]
           ; sta $d06a
-          
+
           lda #80
           sta VIC4.CHARSTEP_LO
           lda #0
@@ -73,22 +75,22 @@ PARAM11             = $3a
 
           sta VIC.BORDER_COLOR
           sta VIC.BACKGROUND_COLOR
-          
+
 
           ;Disable hot register so VIC2 registers wont destroy VIC4 values (bit 7)
-          ;turn off bit 7 
-          lda #$80    
-          trb VIC4.HOTREG 
+          ;turn off bit 7
+          lda #$80
+          trb VIC4.HOTREG
 
           ; Set VIC to use 40 column mode display
-          ;turn off bit 7 
-          lda #$80    
+          ;turn off bit 7
+          lda #$80
           trb VIC3.VICDIS
 
           ;Turn on MCM (same as C64)
           ; lda #$10
           ; tsb $d016
- 
+
           ;Turn on FCM mode and 16bit per char number
           ;bit 0 = Enable 16 bit char numbers
           ;bit 1 = Enable Fullcolor for chars <=$ff
@@ -114,67 +116,67 @@ PARAM11             = $3a
           ;jsr ColorClear32bitAddr
 
 
-          
+
 
           jsr SetPalette
-          
+
           ;change the 16 bit extended atrributes
           ;ldz #$00
           ;lda #%10000001 ;Set bit 7 = Vertical flip
-          ;sta [ZP.Color], z 
+          ;sta [ZP.Color], z
           ;lda #$00000000
-          ;inz 
-          ;sta [ZP.Color], z 
+          ;inz
+          ;sta [ZP.Color], z
 
           ;lda #%10000000 ;Set bit 7 = Vertical flip
-          ;inz  
-          ;sta [ZP.Color], z     
-          
+          ;inz
+          ;sta [ZP.Color], z
+
           lda #<4088
           sta VIC4.SPRPTRADR_LO
           lda #>4088
           sta VIC4.SPRPTRADR_HI
-          
+
           jmp HandleTitle
 
-          
 
-!zone SetPalette          
+
+!zone SetPalette
 SetPalette
           ;Bit 6-7 = Mapped Palette
           ;bit 0-1 = Char palette index
           lda #%01011001
           sta VIC4.PALSEL
 
-          
-          ;copy palette data (16 entries), 
+
+          ;copy palette data (16 entries),
           ;copy 8 times since the palette is also used for sprites
           ;and sprite palettes offset is 16 * sprite index
           ldy #0
---          
+--
           ldx #0
 -
-          
+
           lda PALETTE_DATA_R, x
           sta VIC4.PALRED,y
           lda PALETTE_DATA_G, x
           sta VIC4.PALGREEN,y
           lda PALETTE_DATA_B, x
           sta VIC4.PALBLUE,y
-          
+
           iny
           inx
           cpx #16
           bne -
-          
+
           cpy #128
           bne --
-          
+
           ;duplicate sprite palettes
           ;use palette bank 1
           lda #%10001001
           sta VIC4.PALSEL
-          
+
           ldx #$00
           ldy #0
 -
@@ -184,12 +186,12 @@ SetPalette
           sta VIC4.PALGREEN,y
           lda PALETTE_DATA_B + 16, x
           sta VIC4.PALBLUE,y
-          
+
           iny
           inx
           cpx #10
           bne -
-          
+
           ldx #0
           tya
           clc
@@ -197,7 +199,7 @@ SetPalette
           tay
           cpy #8 * 16
           bne -
-          
+
           ;lda #$c4 ;ff ;$c4 / 2
           ;sta VIC4.PALRED + 2
           ;lda #$cc
@@ -207,8 +209,8 @@ SetPalette
 
           rts
 
-          
-          
+
+
 PALETTE_DATA_R
         ;256 reds (only color that is 7 bits not 8)
         ;Missing bit because of nybble swap = bit 4
@@ -219,28 +221,28 @@ PALETTE_DATA_R
 PALETTE_DATA_G
         ;256 greens
         !byte $00,$55,$00,$55,$aa,$ff,$aa,$ff,$00,$55,$55,$00,$55,$ff,$aa,$ff
-        
+
         !byte 0,$95,$cc,$6d,$5f,0,$33,$35,$c7,$8b
 
 PALETTE_DATA_B
         ;256 blues
         !byte $00,$55,$AA,$FF,$00,$55,$aa,$ff,$00,$00,$55,$aa,$ff,$55,$aa,$ff
-        
+
         !byte 0,$e2,$86,$7a,$6e,0,$e2,$74,$06,$f5
 
 ;CC7C60
-      
-!zone ColorClear32bitAddr     
-;x = num pages, a = color value to set  
+
+!zone ColorClear32bitAddr
+;x = num pages, a = color value to set
 ColorClear32bitAddr
           jsr SetupColorVector
 .Outerloop
           ldz #$00
       -
           sta [ZP.Color], z
-          inz 
+          inz
           bne -
-          dex 
+          dex
           beq +
           inc ZP.Color + 1
           bra .Outerloop
@@ -248,13 +250,13 @@ ColorClear32bitAddr
 
           jmp SetupColorVector
 
-          
-          
-!zone ScreenClear32bitAddr          
+
+
+!zone ScreenClear32bitAddr
 ScreenClear32bitAddr
           jsr SetupColorVector
           jsr SetupScreenVector
-          
+
 --
           ldz #$00
 -
@@ -262,70 +264,70 @@ ScreenClear32bitAddr
           sta [ZP.Screen], z
           lda #$00
           sta [ZP.Color], z
-          inz 
-          
+          inz
+
           ;force chars to $100!
           lda #$01
           sta [ZP.Screen], z
-          
+
           lda #0
           sta [ZP.Color], z
-          
-          inz 
+
+          inz
           bne -
-          
-          dex 
+
+          dex
           beq +
-          
+
           inc ZP.Screen + 1
           inc ZP.Color + 1
           bra --
-          
+
 +
 
           jsr SetupColorVector
           jmp SetupScreenVector
 
-          
 
-!zone SetupScreenVector          
+
+!zone SetupScreenVector
 SetupScreenVector
           lda #<SCREEN_CHAR
           sta ZP.Screen + 0
-          lda #>SCREEN_CHAR 
+          lda #>SCREEN_CHAR
           sta ZP.Screen + 1
           lda #SCREEN_CHAR >> 16
           sta ZP.Screen + 2
           lda #$00
           sta ZP.Screen + 3
-          rts 
+          rts
 
-          
 
-!zone SetupColorVector          
+
+!zone SetupColorVector
 SetupColorVector
           phx
           ldx #<COLOR_RAM
           stx ZP.Color + 0
-          ldx #>COLOR_RAM 
+          ldx #>COLOR_RAM
           stx ZP.Color + 1
           ldx #( COLOR_RAM >> 16 ) & $ff
           stx ZP.Color + 2
           ldx #( COLOR_RAM >> 24 )
           stx ZP.Color + 3
           plx
-          rts 
+          rts
 
-          
-          
-!zone SetupSystem          
+
+
+!zone SetupSystem
 SetupSystem
           lda #$00
-          
+
           sei
-          
+
           +enableVIC4Registers
-  
+
           lda #$35
           sta $01
 
@@ -348,22 +350,22 @@ SetupSystem
           eom
 
           +enable40Mhz
-          
+
           cli
           rts
-          
-          
-          
+
+
+
 !zone DisplayHex
 ;x = offset
-;a = value  
-DisplayHex  
+;a = value
+DisplayHex
           sta PARAM10
-          
+
           txa
           asl
           tax
-          
+
           lda PARAM10
           lsr
           lsr
@@ -383,7 +385,7 @@ DisplayHex
           inc
           sta SCREEN_CHAR + 80 * 24 + 6,x
           rts
-          
+
 HEX_CHAR
           !byte 64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94
 
@@ -394,9 +396,9 @@ HEX_CHAR
 SPRITE_POINTER_BASE = $0ff8
 } else {
 SPRITE_POINTER_BASE = $0ff8
-}          
-          
-          
+}
+
+
 ;16 bit char addresses (charnum = addr/64)
 ;  $000 = $0000
 ;  $001 = $0040
@@ -430,9 +432,9 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,0,1        
+
+!realign 64
+!media "sprites.spriteproject",sprite,0,1
 
 !realign 256
         ;red ball
@@ -458,10 +460,10 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
 
-!realign 64        
-!media "sprites.spriteproject",sprite,1,1 
+!realign 64
+!media "sprites.spriteproject",sprite,1,1
 
-!realign 256        
+!realign 256
         ;green ball
         !byte 0,85,85,0,0,0,0,0
         !byte 5,68,68,32,0,0,0,0
@@ -484,11 +486,11 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,2,1 
-        
-!realign 256        
+
+!realign 64
+!media "sprites.spriteproject",sprite,2,1
+
+!realign 256
         ;yellow ball
         !byte 0,255,255,0,0,0,0,0
         !byte 15,221,221,144,0,0,0,0
@@ -511,11 +513,11 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,3,1 
-        
-!realign 256        
+
+!realign 64
+!media "sprites.spriteproject",sprite,3,1
+
+!realign 256
         ;purple ball
         !byte 0,204,204,0,0,0,0,0
         !byte 12,187,187,16,0,0,0,0
@@ -538,11 +540,11 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,4,1         
 
-!realign 256        
+!realign 64
+!media "sprites.spriteproject",sprite,4,1
+
+!realign 256
         ;brown ball
         !byte 0,221,221,0,0,0,0,0
         !byte 13,153,153,16,0,0,0,0
@@ -565,10 +567,10 @@ SPRITE_DATA
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,5,1   
-        
+
+!realign 64
+!media "sprites.spriteproject",sprite,5,1
+
 !realign 256
 SPRITE_DATA_BLUE_DISK
         ;blue disk
@@ -592,11 +594,11 @@ SPRITE_DATA_BLUE_DISK
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        !byte 0,0,0,0,0,0,0,0       
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,6,1   
-        
+        !byte 0,0,0,0,0,0,0,0
+
+!realign 64
+!media "sprites.spriteproject",sprite,6,1
+
 !realign 256
         ;red disk
         !byte 170,170,170,170,170,170,170,168
@@ -620,10 +622,10 @@ SPRITE_DATA_BLUE_DISK
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,7,1   
-        
+
+!realign 64
+!media "sprites.spriteproject",sprite,7,1
+
 !realign 256
         ;green disk
         !byte 85,85,85,85,85,85,85,84
@@ -647,10 +649,10 @@ SPRITE_DATA_BLUE_DISK
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
-!realign 64        
-!media "sprites.spriteproject",sprite,8,1   
-        
+
+!realign 64
+!media "sprites.spriteproject",sprite,8,1
+
 !realign 256
         ;yellow disk
         !byte 255,255,255,255,255,255,255,253
@@ -698,7 +700,7 @@ SPRITE_DATA_BLUE_DISK
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
+
 !realign 256
         ;brown disk
         !byte 221,221,221,221,221,221,221,217
@@ -722,9 +724,9 @@ SPRITE_DATA_BLUE_DISK
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
         !byte 0,0,0,0,0,0,0,0
-        
+
 } else {
-        
+
         !byte $3c,$00,$00,$7e,$00,$00,$ff,$00
         !byte $00,$ff,$00,$00,$ff,$00,$00,$ff
         !byte $00,$00,$7e,$00,$00,$3c,$00,$00
@@ -734,7 +736,7 @@ SPRITE_DATA_BLUE_DISK
         !byte $00,$00,$00,$00,$00,$00,$00,$00
         !byte $00,$00,$00,$00,$00,$00,$00,$01
 }
-        
+
 ;!realign 64
 !realign 256
 TITLE_LETTER_SPRITES
@@ -922,18 +924,18 @@ TITLE_LETTER_SPRITES
         !byte 103,102,97,80,6,118,102,21
         !byte 102,17,17,80,6,97,17,21
         !byte 101,85,85,80,6,85,85,85
-        
+
         ;!media "sprites.spriteproject",SPRITE,9,8
-      
+
 !src "title.asm"
 !src "game.asm"
-      
+
 ;one byte is one pixel
 * = $4000
 !src "tiles.asm"
 
-!src "sfxplay.asm" 
-!src "objects.asm"        
+!src "sfxplay.asm"
+!src "objects.asm"
 !src "level.asm"
 !src "welldone.asm"
 
@@ -941,8 +943,8 @@ TITLE_LETTER_SPRITES
 !zone PlaySoundEffect
 PlaySoundEffectInChannel0
           lda #0
- 
-;y = SFX_...  
+
+;y = SFX_...
 ;a = channel 0,1,2
 PlaySoundEffect
           pha
@@ -952,8 +954,8 @@ PlaySoundEffect
           pla
           jmp SFXPlay
 
-          
-          
+
+
 SFX_BALL_BOUNCE   = 0
 SFX_DISK_PUSH     = 1
 SFX_COLOR_CHANGE  = 2
@@ -976,7 +978,7 @@ SFX_TABLE_HI
           !byte >FX_BRICK_BREAK
           !byte >FX_BALL_KILLED
           !byte >FX_BONUS_BLIP
-          
+
 FX_BOUNCE
           ;!byte ( FX_SLIDE_PING_PONG << 2 ) | FX_WAVE_SAWTOOTH
           ;!hex c20b2d459db50106
@@ -984,7 +986,7 @@ FX_BOUNCE
           !byte ( FX_SLIDE << 2 ) | FX_WAVE_NOISE
           !hex 362c7ca48cf4e317dc
 
-FX_DISK_PUSH          
+FX_DISK_PUSH
           !byte ( FX_SLIDE_PING_PONG << 2 ) | FX_WAVE_TRIANGLE
           !hex ef163e668eb60209
           !byte FX_STEP
@@ -992,17 +994,16 @@ FX_DISK_PUSH
 FX_COLOR_CHANGE
           !byte ( FX_SLIDE << 2 ) | FX_WAVE_PULSE
           !hex 2d057d558de50306dd
-          
-FX_BRICK_BREAK          
+
+FX_BRICK_BREAK
           !byte ( FX_SLIDE << 2 ) | FX_WAVE_NOISE
           !hex 4c2599c86b0dfc2b20
 
-FX_BALL_KILLED          
+FX_BALL_KILLED
           !byte ( FX_SLIDE << 2 ) | FX_WAVE_NOISE
           !hex b50a062e567eff2b18
 
-FX_BONUS_BLIP          
+FX_BONUS_BLIP
           !byte ( FX_SLIDE_PING_PONG << 2 ) | FX_WAVE_TRIANGLE
           !hex e60f375f87af1cf8d7
 
-          
